@@ -1,8 +1,11 @@
 package com.itesm.arqui.googlemaps.service;
 
+import com.itesm.arqui.googlemaps.config.GlobalVariables;
 import com.itesm.arqui.googlemaps.dao.PueblosDao;
 import com.itesm.arqui.googlemaps.domain.Pueblos;
 import com.itesm.arqui.googlemaps.domain.Ruta;
+import com.itesm.arqui.googlemaps.pojo.DijkstraAlgorithm;
+import com.itesm.arqui.googlemaps.pojo.Graph;
 import com.itesm.arqui.googlemaps.pojo.Result;
 import com.itesm.arqui.googlemaps.pojo.templates.ServiceTemplate;
 import org.slf4j.Logger;
@@ -12,10 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.*;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class PueblosService extends ServiceTemplate<Pueblos> {
@@ -27,6 +27,10 @@ public class PueblosService extends ServiceTemplate<Pueblos> {
 
     @Autowired
     public PueblosDao pueblosDao;
+
+
+    @Autowired
+    private GlobalVariables globalVariables;
 
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
@@ -65,55 +69,30 @@ public class PueblosService extends ServiceTemplate<Pueblos> {
 
                 if(origen.isPresent()){
                     if(destino.isPresent()){
-                        List<Map<String, Object>> obj = pueblosDao.getEndpoints(data.getInicio(), data.getDestino());
-
                         Pueblos or = origen.get();
                         Pueblos des = destino.get();
 
-                        StringBuilder places= new StringBuilder();
+                        globalVariables.getPueblos();
 
-                        for (Map<String, Object> val: obj){
-                            places.append("|");
-                            places.append(String.valueOf(val.get("latitud")));
-                            places.append(",");
-                            places.append(String.valueOf(val.get("longitud")));
-                        }
+                        // Lets check from location Loc_1 to Loc_10
+                        Graph graph = new Graph(globalVariables.getPueblos(), globalVariables.getPuntos());
+                        DijkstraAlgorithm dijkstra = new DijkstraAlgorithm(graph);
+                        dijkstra.execute(or);
+                        LinkedList<Pueblos> path = dijkstra.getPath(des);
 
-                        try {
-                            String origin = "https://maps.googleapis.com/maps/api/directions/json";
-
-
-                            Map<String, String> parameters = new HashMap<>();
-                            parameters.put("origin", or.getLatitud()+","+or.getLongitud());
-                            parameters.put("destination", des.getLatitud()+","+des.getLongitud());
-                            parameters.put("waypoints","optimize:true"+places.toString());
-                            parameters.put("key","AIzaSyDuik0qtQYYdbdP9yenCBfFtYzrJe2rJ7I");
-
-
-
-                            URL url = new URL(origin.concat("?").concat(ParameterStringBuilder.getParamsString(parameters)));
-                            HttpURLConnection con = (HttpURLConnection) url.openConnection();
-                            con.setRequestMethod("GET");
-                            con.setDoOutput(true);
-                            con.setConnectTimeout(10000);
-                            con.setReadTimeout(10000);
-
-                            int status = con.getResponseCode();
-
-                            BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
-                            String inputLine;
-                            StringBuffer content = new StringBuffer();
-                            while ((inputLine = in.readLine()) != null) {
-                                content.append(inputLine);
+                        if(path != null && path.size() > 0){
+                            HashMap<Integer, HashMap<String, String>> response = new HashMap<>();
+                            int i=0;
+                            for (Pueblos vertex : path) {
+                                response.put(i++,vertex.toMap());
                             }
-                            in.close();
-
-                            logger.info(String.valueOf(status));
-                            logger.info(content.toString());
-
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                            result.setData(response);
+                        }else{
+                            result.setData(null);
                         }
+
+                        result.setCode(Result.OK);
+                        result.setMessage("¡Exito! Todo salio como se debe");
 
                     }else{
                         result.setCode(Result.BAD_REQUEST);

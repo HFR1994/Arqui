@@ -7,32 +7,32 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Punto extends Entity{
 
-    private Pueblos inicio;
-    private Pueblos destino;
-    private Double tiempo;
+    private String inicio;
+    private String destino;
+    private String tiempo;
     private Double km;
 
-    public Pueblos getInicio() {
+    public String getInicio() {
         return inicio;
     }
 
-    public void setInicio(Pueblos inicio) {
+    public void setInicio(String inicio) {
         this.inicio = inicio;
     }
 
-    public Pueblos getDestino() {
+    public String getDestino() {
         return destino;
     }
 
-    public void setDestino(Pueblos destino) {
+    public void setDestino(String destino) {
         this.destino = destino;
     }
 
-    public Double getTiempo() {
+    public String getTiempo() {
         return tiempo;
     }
 
-    public void setTiempo(Double tiempo) {
+    public void setTiempo(String tiempo) {
         this.tiempo = tiempo;
     }
 
@@ -47,5 +47,11 @@ public class Punto extends Entity{
     @Override
     public Class findDomainClass() {
         return Punto.class;
+    }
+
+
+    @Override
+    public String toString() {
+        return inicio + " - " + destino;
     }
 }

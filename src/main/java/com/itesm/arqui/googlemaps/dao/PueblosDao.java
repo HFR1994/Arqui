@@ -25,29 +25,21 @@ public class PueblosDao extends DaoTemplate<Pueblos> {
 
     @Autowired
     private JdbcTemplate jdbc;
+
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
 
     public Optional<Pueblos> getByName(String uuid){
-
         String sql = "Select * from `pueblos` where nombre = ?";
-        try {
-            BeanPropertyRowMapper<Pueblos> rowMapper = new BeanPropertyRowMapper<>(Pueblos.class);
-            Pueblos miclase=jdbc.queryForObject(sql, rowMapper, uuid);
-            logger.info("Obteniendo pueblos por nombre " + uuid);
-            return Optional.of(miclase);
-        } catch (EmptyResultDataAccessException e) {
-            e.printStackTrace();
-            return Optional.empty();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return Optional.empty();
+        BeanPropertyRowMapper<Pueblos> rowMapper = new BeanPropertyRowMapper<>(Pueblos.class);
+        Pueblos miclase=jdbc.queryForObject(sql, rowMapper, uuid);
+        logger.info("Obteniendo pueblos por nombre " + uuid);
+        return Optional.of(miclase);
     }
 
     public List<Map<String, Object>> getPueblos(){
 
-        String sql = "SELECT * FROM pueblos";
+        String sql = "SELECT * FROM `pueblos`";
 
         return jdbc.queryForList(sql);
 

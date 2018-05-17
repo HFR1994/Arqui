@@ -1,16 +1,21 @@
 package com.itesm.arqui.googlemaps.endpoint;
 
+import com.itesm.arqui.googlemaps.config.GlobalVariables;
 import com.itesm.arqui.googlemaps.domain.Pueblos;
+import com.itesm.arqui.googlemaps.domain.Punto;
 import com.itesm.arqui.googlemaps.domain.Ruta;
 import com.itesm.arqui.googlemaps.pojo.Result;
 import com.itesm.arqui.googlemaps.service.PueblosService;
 import com.itesm.arqui.googlemaps.pojo.templates.EndpointTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.Optional;
 
 import org.springframework.stereotype.Component;
@@ -22,6 +27,8 @@ public class PueblosEndpoint extends EndpointTemplate<Pueblos> {
 
     @Autowired
     private PueblosService pueblosService;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @GET
     @Path("/pueblos")

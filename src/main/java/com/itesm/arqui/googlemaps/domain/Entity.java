@@ -71,63 +71,6 @@ public abstract class Entity<T>{
 
     public abstract Class<T> findDomainClass();
 
-    @Override
-    public boolean equals(Object o) {
 
-        Class<T> clase = findDomainClass();
-
-        if (o == this) return true;
-
-        if (!clase.isInstance(o)) {
-            return false;
-        }
-
-        T obj = clase.cast(o);
-
-        EqualsBuilder equals = new EqualsBuilder();
-
-        Field[] fields = obj.getClass().getDeclaredFields();
-
-        for (Field field : fields) {
-            field.setAccessible(true);
-
-            try {
-                equals.append(PropertyUtils.getProperty(this, field.getName()),field.get(obj));
-            } catch (IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        }
-
-
-        return equals.isEquals();
-    }
-
-    @Override
-    public int hashCode() {
-        Field[] fields = this.getClass().getDeclaredFields();
-        HashCodeBuilder var = new HashCodeBuilder(17, 37);
-        for (Field field : fields) {
-            field.setAccessible(true);
-            try {
-                var.append(field.get(this.getClass()));
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
-        }
-        return var.toHashCode();
-    }
-
-    Date parseDate(Date date){
-        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
-        formatter.setTimeZone(TimeZone.getTimeZone("America/Mexico_City"));
-
-        String dateInString = formatter.format(date)+"T00:00:00Z";
-
-        Instant instant = Instant.parse(dateInString);
-        LocalDateTime result = LocalDateTime.ofInstant(instant, ZoneId.of(ZoneOffset.UTC.getId()));
-
-        return Date.from(result.atZone(ZoneId.systemDefault()).toInstant());
-
-    }
 
 }

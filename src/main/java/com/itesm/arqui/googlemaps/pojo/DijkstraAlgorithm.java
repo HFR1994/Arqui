@@ -2,29 +2,35 @@ package com.itesm.arqui.googlemaps.pojo;
 
 import com.itesm.arqui.googlemaps.domain.Pueblos;
 import com.itesm.arqui.googlemaps.domain.Punto;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class DijkstraAlgorithm {
 
     private final List<Pueblos> nodes;
-    private final List<Punto> Puntos;
+    private final List<Punto> puntos;
     private Set<Pueblos> settledNodes;
     private Set<Pueblos> unSettledNodes;
     private Map<Pueblos, Pueblos> predecessors;
     private Map<Pueblos, Double> distance;
+    private HashMap<String,Pueblos> datos;
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public DijkstraAlgorithm(Graph graph) {
         // create a copy of the array so that we can operate on this array
         this.nodes = new ArrayList<Pueblos>(graph.getPueblos());
-        this.Puntos = new ArrayList<Punto>(graph.getPuntos());
+        this.puntos = new ArrayList<Punto>(graph.getPuntos());
+        this.datos = graph.getDatos();
     }
 
     public void execute(Pueblos source) {
-        settledNodes = new HashSet<Pueblos>();
-        unSettledNodes = new HashSet<Pueblos>();
-        distance = new HashMap<Pueblos, Double>();
-        predecessors = new HashMap<Pueblos, Pueblos>();
+        settledNodes = new HashSet<>();
+        unSettledNodes = new HashSet<>();
+        distance = new HashMap<>();
+        predecessors = new HashMap<>();
         distance.put(source, 0.0);
         unSettledNodes.add(source);
         while (unSettledNodes.size() > 0) {
@@ -50,9 +56,9 @@ public class DijkstraAlgorithm {
     }
 
     private Double getDistance(Pueblos node, Pueblos target) {
-        for (Punto Punto : Puntos) {
-            if (Punto.getInicio().equals(node) && Punto.getDestino().equals(target) || Punto.getDestino().equals(node) && Punto.getInicio().equals(target)) {
-                return Punto.getTiempo();
+        for (Punto Punto : puntos) {
+            if (datos.get(Punto.getInicio()).equals(node) && datos.get(Punto.getDestino()).equals(target) || datos.get(Punto.getDestino()).equals(node) && datos.get(Punto.getInicio()).equals(target)) {
+                return Punto.getKm();
             }
         }
         throw new RuntimeException("Should not happen");
@@ -60,13 +66,20 @@ public class DijkstraAlgorithm {
 
     private List<Pueblos> getNeighbors(Pueblos node) {
         List<Pueblos> neighbors = new ArrayList<Pueblos>();
-        for (Punto Punto : Puntos) {
-            if (Punto.getInicio().equals(node) && !isSettled(Punto.getDestino())) {
-                neighbors.add(Punto.getDestino());
-            }else if (Punto.getDestino().equals(node) && !isSettled(Punto.getInicio())) {
-                neighbors.add(Punto.getInicio());
+
+        for (Punto Punto : puntos) {
+            if(!Punto.getInicio().equals(Punto.getDestino())) {
+                Pueblos inicio = datos.get(Punto.getInicio());
+                Pueblos fin = datos.get(Punto.getDestino());
+
+                if (inicio.equals(node) && !isSettled(fin)) {
+                    neighbors.add(fin);
+                } else if (fin.equals(node) && !isSettled(inicio)) {
+                    neighbors.add(inicio);
+                }
             }
         }
+
         return neighbors;
     }
 
